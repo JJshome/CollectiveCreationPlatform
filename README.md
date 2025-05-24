@@ -413,31 +413,9 @@ SSL_CERT_PATH=/etc/ssl/certs/cert.pem
 SSL_KEY_PATH=/etc/ssl/private/key.pem
 ```
 
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-### Development Guidelines
-
-- Follow ESLint configuration
-- Write tests for new features
-- Update documentation
-- Use conventional commit messages
-- Ensure Docker builds succeed
-
 ## License
 
 This project is proprietary and patent-pending.
-
-## Support
-
-- **Documentation**: [GitHub Wiki](https://github.com/JJshome/CollectiveCreationPlatform/wiki)
-- **Issues**: [GitHub Issues](https://github.com/JJshome/CollectiveCreationPlatform/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/JJshome/CollectiveCreationPlatform/discussions)
 
 ---
 
