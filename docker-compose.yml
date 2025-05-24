@@ -1,0 +1,327 @@
+version: '3.8'
+
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:6.0
+    container_name: collective-creation-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: collective-creation
+    volumes:
+      - mongodb_data:/data/db
+      - ./scripts/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    networks:
+      - collective-creation-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: collective-creation-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --requirepass redis123
+    volumes:
+      - redis_data:/data
+    networks:
+      - collective-creation-network
+
+  # Local Ethereum Node (Ganache)
+  ganache:
+    image: trufflesuite/ganache:latest
+    container_name: collective-creation-ganache
+    restart: unless-stopped
+    ports:
+      - "8545:8545"
+    command: >
+      --host 0.0.0.0
+      --accounts 10
+      --defaultBalanceEther 100
+      --deterministic
+      --mnemonic "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"
+      --networkId 1337
+      --chainId 1337
+    networks:
+      - collective-creation-network
+
+  # Backend API Server
+  backend:
+    build:
+      context: ./src/backend
+      dockerfile: Dockerfile
+    container_name: collective-creation-backend
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      NODE_ENV: development
+      PORT: 5000
+      MONGODB_URI: mongodb://admin:password123@mongodb:27017/collective-creation?authSource=admin
+      REDIS_URL: redis://:redis123@redis:6379
+      BLOCKCHAIN_RPC_URL: http://ganache:8545
+      BLOCKCHAIN_PRIVATE_KEY: 0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d
+      JWT_SECRET: your-super-secret-jwt-key-development-only
+      FEATURE_BLOCKCHAIN_ENABLED: "true"
+      FEATURE_EMOTION_ANALYSIS_ENABLED: "true"
+      FEATURE_VIRTUAL_AGENTS_ENABLED: "true"
+      LOG_LEVEL: info
+    depends_on:
+      - mongodb
+      - redis
+      - ganache
+    volumes:
+      - ./src/backend:/app
+      - /app/node_modules
+      - backend_logs:/app/logs
+    networks:
+      - collective-creation-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Frontend Application (optional)
+  frontend:
+    build:
+      context: ./src/frontend
+      dockerfile: Dockerfile
+    container_name: collective-creation-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      REACT_APP_API_URL: http://localhost:5000/api
+      REACT_APP_WS_URL: ws://localhost:5000
+      REACT_APP_BLOCKCHAIN_NETWORK: http://localhost:8545
+    depends_on:
+      - backend
+    volumes:
+      - ./src/frontend:/app
+      - /app/node_modules
+    networks:
+      - collective-creation-network
+
+  # NGINX Reverse Proxy (production)
+  nginx:
+    image: nginx:alpine
+    container_name: collective-creation-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./config/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./config/ssl:/etc/nginx/ssl:ro
+      - nginx_logs:/var/log/nginx
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - collective-creation-network
+    profiles:
+      - production
+
+  # Monitoring - Prometheus
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: collective-creation-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    networks:
+      - collective-creation-network
+    profiles:
+      - monitoring
+
+  # Monitoring - Grafana
+  grafana:
+    image: grafana/grafana:latest
+    container_name: collective-creation-grafana
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: grafana123
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./config/grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
+    networks:
+      - collective-creation-network
+    profiles:
+      - monitoring
+
+  # Log Aggregation - ELK Stack (Elasticsearch)
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.8.0
+    container_name: collective-creation-elasticsearch
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - collective-creation-network
+    profiles:
+      - logging
+
+  # Log Aggregation - Kibana
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.8.0
+    container_name: collective-creation-kibana
+    restart: unless-stopped
+    ports:
+      - "5601:5601"
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
+    networks:
+      - collective-creation-network
+    profiles:
+      - logging
+
+  # Log Aggregation - Logstash
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.8.0
+    container_name: collective-creation-logstash
+    restart: unless-stopped
+    volumes:
+      - ./config/logstash/pipeline:/usr/share/logstash/pipeline:ro
+      - backend_logs:/var/log/app:ro
+      - nginx_logs:/var/log/nginx:ro
+    depends_on:
+      - elasticsearch
+    networks:
+      - collective-creation-network
+    profiles:
+      - logging
+
+  # Message Queue - RabbitMQ (for background jobs)
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: collective-creation-rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: rabbitmq123
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - collective-creation-network
+    profiles:
+      - queue
+
+  # Background Job Worker
+  worker:
+    build:
+      context: ./src/backend
+      dockerfile: Dockerfile.worker
+    container_name: collective-creation-worker
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      MONGODB_URI: mongodb://admin:password123@mongodb:27017/collective-creation?authSource=admin
+      REDIS_URL: redis://:redis123@redis:6379
+      RABBITMQ_URL: amqp://admin:rabbitmq123@rabbitmq:5672
+      BLOCKCHAIN_RPC_URL: http://ganache:8545
+      BLOCKCHAIN_PRIVATE_KEY: 0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d
+    depends_on:
+      - mongodb
+      - redis
+      - rabbitmq
+      - ganache
+    volumes:
+      - ./src/backend:/app
+      - /app/node_modules
+    networks:
+      - collective-creation-network
+    profiles:
+      - queue
+
+  # Development Tools - pgAdmin equivalent for MongoDB
+  mongo-express:
+    image: mongo-express:latest
+    container_name: collective-creation-mongo-express
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: admin
+      ME_CONFIG_MONGODB_ADMINPASSWORD: password123
+      ME_CONFIG_MONGODB_URL: mongodb://admin:password123@mongodb:27017/
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: admin
+    depends_on:
+      - mongodb
+    networks:
+      - collective-creation-network
+    profiles:
+      - development
+
+  # Redis GUI
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: collective-creation-redis-commander
+    restart: unless-stopped
+    ports:
+      - "8082:8081"
+    environment:
+      REDIS_HOSTS: local:redis:6379:0:redis123
+    depends_on:
+      - redis
+    networks:
+      - collective-creation-network
+    profiles:
+      - development
+
+volumes:
+  mongodb_data:
+    driver: local
+  redis_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  elasticsearch_data:
+    driver: local
+  rabbitmq_data:
+    driver: local
+  backend_logs:
+    driver: local
+  nginx_logs:
+    driver: local
+
+networks:
+  collective-creation-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
