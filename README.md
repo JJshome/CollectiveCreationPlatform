@@ -76,342 +76,368 @@ The Collective Creation Platform is an innovative AI-powered system that enables
 
 ![System Architecture](doc/images/system_architecture.svg)
 
-## New Features Implementation
-
-### Virtual Human Agents
-```javascript
-// Create autonomous virtual agent
-const agent = await virtualAgentService.createVirtualAgent(userId, {
-  personalityType: 'creative',
-  autonomyLevel: 'moderate',
-  capabilities: ['design_generation', 'collaboration', 'learning']
-});
-
-// Enable agent autonomy
-await virtualAgentService.activateAgentAutonomy(agent.id, 'high');
-
-// Facilitate agent collaboration
-const collaboration = await virtualAgentService.startCollaborationSession(
-  [agent1.id, agent2.id, agent3.id],
-  { type: 'fashion_design', goal: 'sustainable_clothing_line' }
-);
-```
-
-### Emotion Recognition
-```javascript
-// Analyze user emotion from multiple inputs
-const emotionAnalysis = await emotionService.analyzeUserEmotion(userId, {
-  text: "I'm feeling frustrated with this design",
-  behavior: { clickRate: 15, pauseDuration: 3000 },
-  context: { activity: 'designing', timeOfDay: 'evening' }
-});
-
-// Get adaptive response based on emotion
-const adaptiveResponse = emotionAnalysis.adaptiveResponse;
-// Adjust interface complexity, interaction style, and support level
-```
-
-### Blockchain Virtual Economy
-```javascript
-// Mint collaboration NFT
-const nft = await blockchainService.mintCollaborationNFT(
-  userId,
-  projectId,
-  {
-    score: 95,
-    phase: 'ideation',
-    type: 'creative_contribution',
-    innovationLevel: 'high'
-  }
-);
-
-// Create marketplace listing
-const listing = await blockchainService.createMarketplaceListing(
-  userId,
-  nft.tokenId,
-  100, // price in reward tokens
-  'REWARD_TOKEN'
-);
-
-// Distribute rewards to team members
-const distributions = await blockchainService.distributeRewardTokens(
-  [
-    { userId: 'user1', contributionScore: 85 },
-    { userId: 'user2', contributionScore: 90 },
-    { userId: 'user3', contributionScore: 78 }
-  ],
-  1000, // total reward pool
-  projectId
-);
-```
-
-## Technical Implementation
-
-### Technology Stack
-- **Frontend**: React.js with Three.js for 3D visualization
-- **Backend**: Node.js with Express.js
-- **AI/ML**: Integrated LLM services with emotional intelligence
-- **Blockchain**: Ethereum with Web3.js integration
-- **Database**: MongoDB for design history, Redis for real-time state
-- **Real-time Communication**: Socket.IO for live collaboration
-
-### Key Algorithms
-
-#### Collective Intelligence Algorithm
-```python
-def collective_decision(agents, design_proposal):
-    """
-    Implements weighted consensus among AI agents
-    """
-    votes = []
-    for agent in agents:
-        weight = agent.expertise_score * agent.reputation
-        vote = agent.evaluate_proposal(design_proposal)
-        votes.append((vote, weight))
-    
-    return weighted_consensus(votes)
-```
-
-#### Emotion-Aware Adaptation
-```python
-def adapt_interaction(user_emotion, context):
-    """
-    Adapts system behavior based on user emotional state
-    """
-    if user_emotion.primary == 'frustration':
-        return {
-            'complexity': 'simplified',
-            'pace': 'slower',
-            'support': 'increased'
-        }
-    elif user_emotion.primary == 'excitement':
-        return {
-            'complexity': 'enhanced',
-            'pace': 'faster',
-            'features': 'advanced'
-        }
-    return default_adaptation()
-```
-
-#### Virtual Agent Learning
-```python
-def agent_learning_cycle(agent, interaction_data):
-    """
-    Continuous learning loop for virtual agents
-    """
-    # Process new experience
-    experience = process_interaction(interaction_data)
-    
-    # Update agent memory
-    agent.memory.add_experience(experience)
-    
-    # Adapt behavior based on feedback
-    if experience.feedback_positive:
-        agent.reinforce_behavior(experience.action)
-    else:
-        agent.adjust_behavior(experience.action)
-    
-    # Update skills and capabilities
-    agent.update_skills(experience.skill_usage)
-```
-
-## API Documentation
-
-### Virtual Agent Management
-- `POST /api/agents/virtual/create` - Create new virtual agent
-- `GET /api/agents/virtual/:id/status` - Get agent status
-- `POST /api/agents/virtual/:id/autonomy` - Configure agent autonomy
-- `POST /api/agents/virtual/interact` - Facilitate agent interaction
-- `POST /api/agents/virtual/collaborate` - Start collaboration session
-
-### Emotion Recognition
-- `POST /api/emotion/analyze` - Analyze user emotion
-- `GET /api/emotion/state/:userId` - Get current emotion state
-- `GET /api/emotion/analytics/:userId` - Get emotion analytics
-
-### Blockchain Operations
-- `POST /api/blockchain/wallet/create` - Create user wallet
-- `POST /api/blockchain/nft/mint` - Mint collaboration NFT
-- `POST /api/blockchain/rewards/distribute` - Distribute rewards
-- `GET /api/blockchain/assets/:userId` - Get user assets
-- `POST /api/blockchain/marketplace/list` - Create marketplace listing
-- `GET /api/blockchain/marketplace` - Browse marketplace
-- `POST /api/blockchain/marketplace/purchase` - Purchase NFT
-- `GET /api/blockchain/analytics` - Get blockchain analytics
-
-### Legacy API (Enhanced)
-- `POST /api/agents/create` - Create AI agent
-- `GET /api/agents/:id` - Retrieve agent profile
-- `PUT /api/agents/:id/preferences` - Update agent preferences
-- `POST /api/designs/initialize` - Start new design project
-- `GET /api/designs/:id/iterations` - Get design history
-- `POST /api/designs/:id/evolve` - Trigger design evolution
-
-## WebSocket Events
-
-### Real-time Collaboration
-```javascript
-// Design collaboration
-socket.emit('join-design', designId);
-socket.emit('modify-design', { designId, agentId, modification });
-socket.on('design-updated', (result) => { /* handle update */ });
-
-// Emotion updates
-socket.emit('emotion-update', { userId, inputData });
-socket.on('emotion-analysis', (analysis) => { /* adapt interface */ });
-
-// Virtual agent interactions
-socket.emit('agent-message', { agentId, message, context });
-socket.on('agent-response', (response) => { /* display response */ });
-
-// Blockchain events
-socket.emit('join-project', projectId);
-socket.emit('nft-mint-request', { userId, projectId, contributionData });
-socket.on('nft-minted', (nft) => { /* update UI */ });
-```
-
-## Use Cases
-
-### Fashion Industry Applications
-- **Collaborative Collections**: Multiple designers working through AI proxies
-- **Emotional Design**: Clothing that adapts to wearer's emotional state
-- **Sustainable Fashion**: AI-driven eco-friendly design optimization
-- **Virtual Try-On**: Blockchain-verified authenticity with virtual agents
-
-### Research Applications
-- **Human-AI Collaboration Studies**: Understanding collective creativity
-- **Emotional AI Research**: Studying emotion-aware computing systems
-- **Virtual Economy Models**: Analyzing blockchain-based creative economies
-- **Autonomous Agent Behavior**: Researching multi-agent system dynamics
-
-### Educational Platform
-- **Design Thinking**: Teaching collaborative design with emotional intelligence
-- **AI Ethics**: Exploring fairness in emotionally-aware AI systems
-- **Blockchain Technology**: Practical NFT and virtual economy implementation
-- **Social Psychology**: Understanding virtual relationships and collaboration
-
-![Use Cases Visualization](doc/images/use_cases.svg)
-
-## Getting Started
+## Quick Start
 
 ### Prerequisites
-```bash
-- Node.js >= 18.0.0
-- Python >= 3.9
-- Docker >= 20.10
-- MongoDB >= 5.0
-- Redis >= 6.0
-- Ethereum wallet (for blockchain features)
-```
+- Docker & Docker Compose
+- Node.js >= 18.0.0 (if running locally)
+- 8GB+ RAM (recommended)
+- 50GB+ available disk space
 
-### Installation
+### Option 1: Docker Deployment (Recommended)
 
-1. Clone the repository:
 ```bash
+# Clone the repository
 git clone https://github.com/JJshome/CollectiveCreationPlatform.git
 cd CollectiveCreationPlatform
-```
 
-2. Install dependencies:
-```bash
-cd src/backend
-npm install
-```
-
-3. Configure environment:
-```bash
-cp .env.example .env
-# Edit .env with your configuration:
-# - MongoDB connection string
-# - Redis URL
-# - Blockchain RPC URL and private key
-# - LLM API keys
-```
-
-4. Run the platform:
-```bash
-# Start with Docker (recommended)
+# Start all services
 docker-compose up -d
 
-# Or run manually
+# Check status
+docker-compose ps
+
+# View logs
+docker-compose logs -f backend
+```
+
+Access the platform:
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:5000
+- **MongoDB Admin**: http://localhost:8081 (admin:admin)
+- **Redis Admin**: http://localhost:8082
+- **Grafana**: http://localhost:3001 (admin:grafana123)
+
+### Option 2: Local Development
+
+```bash
+# Clone repository
+git clone https://github.com/JJshome/CollectiveCreationPlatform.git
+cd CollectiveCreationPlatform
+
+# Backend setup
+cd src/backend
+cp .env.example .env
+npm install
 npm run dev
+
+# Frontend setup (new terminal)
+cd src/frontend
+npm install
+npm start
+
+# Worker process (new terminal)
+cd src/backend
+npm run worker
 ```
 
-5. Access the platform:
+### Environment Configuration
+
+Edit `src/backend/.env`:
+
+```env
+# Database
+MONGODB_URI=mongodb://admin:password123@localhost:27017/collective-creation?authSource=admin
+REDIS_URL=redis://:redis123@localhost:6379
+
+# Blockchain
+BLOCKCHAIN_RPC_URL=http://localhost:8545
+BLOCKCHAIN_PRIVATE_KEY=0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d
+
+# Authentication
+JWT_SECRET=your-super-secret-jwt-key
+
+# Features (enable/disable)
+FEATURE_BLOCKCHAIN_ENABLED=true
+FEATURE_EMOTION_ANALYSIS_ENABLED=true
+FEATURE_VIRTUAL_AGENTS_ENABLED=true
+
+# External APIs (optional)
+OPENAI_API_KEY=your-openai-key
+HUGGINGFACE_API_KEY=your-huggingface-key
 ```
-- Backend API: http://localhost:5000
-- Health Check: http://localhost:5000/health
-- WebSocket: ws://localhost:5000
+
+## Development Workflow
+
+### Running Tests
+
+```bash
+# Backend tests
+cd src/backend
+npm test
+npm run test:coverage
+
+# Frontend tests
+cd src/frontend
+npm test
+npm run test:coverage
 ```
 
-## Performance Metrics
+### Code Quality
 
-- **Consensus Speed**: Average 2.3 seconds per design decision
-- **Emotion Recognition**: 95% accuracy with sub-second response
-- **Agent Response Time**: <500ms for virtual agent interactions
-- **Design Quality**: 87% satisfaction rate in user studies
-- **Scalability**: Supports up to 100 concurrent AI agents
-- **Blockchain Throughput**: 1,000+ operations per hour
-- **Memory Efficiency**: Agents maintain 50+ long-term memories
+```bash
+# Linting
+npm run lint
+npm run lint:fix
 
-## Security & Privacy
+# Formatting
+npm run format
 
-### Data Protection
-- **Emotion Data Encryption**: All emotional data encrypted at rest and in transit
-- **Agent Isolation**: Each virtual agent runs in sandboxed environment
-- **Blockchain Security**: Multi-signature wallets for high-value transactions
-- **Privacy-First Design**: User consent required for all data collection
+# Type checking (if using TypeScript)
+npm run type-check
+```
 
-### Access Control
-- **Role-Based Permissions**: Granular access control for all operations
-- **Agent Autonomy Limits**: Configurable constraints on agent actions
-- **Audit Logging**: Complete transaction and interaction history
-- **Data Minimization**: Only necessary data collected and stored
+### Database Management
 
-## Deployment Options
+```bash
+# Initialize database with sample data
+docker-compose exec mongodb mongo collective-creation /scripts/mongo-init.js
 
-### Cloud Deployment
-- **Container Orchestration**: Kubernetes-ready with Helm charts
-- **Auto-scaling**: Emotional load-based scaling for optimal performance
-- **Multi-region**: Global deployment with edge computing support
-- **CDN Integration**: Fast asset delivery worldwide
+# Create database backup
+docker-compose exec mongodb mongodump --uri "mongodb://admin:password123@localhost:27017/collective-creation?authSource=admin" --out /backup
 
-### On-Premise
-- **Private Cloud**: Complete control over data and AI models
-- **Local Blockchain**: Private network for sensitive applications
-- **Air-gapped Operation**: Offline mode for high-security environments
-- **Custom AI Models**: Deploy proprietary LLM instances
+# Restore database
+docker-compose exec mongodb mongorestore --uri "mongodb://admin:password123@localhost:27017" /backup/collective-creation
+```
 
-### Hybrid Architecture
-- **Edge Computing**: Local emotion processing with cloud intelligence
-- **Federated Learning**: Distributed agent training across nodes
-- **Data Sovereignty**: Comply with regional data protection laws
-- **Fallback Systems**: Graceful degradation when services unavailable
+### Monitoring & Debugging
 
-## Monitoring & Analytics
+```bash
+# View all service logs
+docker-compose logs -f
 
-### System Health
-- **Real-time Dashboards**: Monitor all services and agent performance
-- **Emotional Intelligence Metrics**: Track user satisfaction and engagement
-- **Blockchain Analytics**: NFT trading volume and reward distribution
-- **Agent Behavior Analysis**: Monitor autonomous agent decision patterns
+# View specific service logs
+docker-compose logs -f backend
+docker-compose logs -f mongodb
+docker-compose logs -f redis
 
-### Business Intelligence
-- **Collaboration Patterns**: Understand how teams work together
-- **Design Success Metrics**: Track which designs perform best
-- **User Emotional Journey**: Map user satisfaction over time
-- **Economic Impact**: Measure value creation through virtual economy
+# Check service health
+curl http://localhost:5000/health
+
+# Monitor resource usage
+docker stats
+```
+
+## API Usage Examples
+
+### Authentication
+
+```bash
+# Register user
+curl -X POST http://localhost:5000/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "designer",
+    "email": "designer@example.com",
+    "password": "password123"
+  }'
+
+# Login
+curl -X POST http://localhost:5000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "designer@example.com",
+    "password": "password123"
+  }'
+```
+
+### Project Management
+
+```bash
+# Create project
+curl -X POST http://localhost:5000/api/projects \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Sustainable Fashion Line",
+    "description": "Creating eco-friendly clothing designs",
+    "category": "fashion"
+  }'
+
+# Get projects
+curl -X GET http://localhost:5000/api/projects \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+### Virtual Agent Operations
+
+```bash
+# Create virtual agent
+curl -X POST http://localhost:5000/api/agents/virtual \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "DesignBot",
+    "type": "design",
+    "capabilities": ["pattern-recognition", "color-harmony"]
+  }'
+
+# Start agent collaboration
+curl -X POST http://localhost:5000/api/agents/collaborate \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "agentIds": ["agent1", "agent2"],
+    "task": "design_improvement",
+    "context": "sustainable_fashion"
+  }'
+```
+
+## Docker Profiles
+
+The platform supports different deployment profiles:
+
+```bash
+# Development (basic services)
+docker-compose up -d
+
+# With monitoring
+docker-compose --profile monitoring up -d
+
+# With logging (ELK stack)
+docker-compose --profile logging up -d
+
+# With background job processing
+docker-compose --profile queue up -d
+
+# Full production setup
+docker-compose --profile production --profile monitoring --profile logging up -d
+```
+
+## Scaling & Performance
+
+### Horizontal Scaling
+
+```bash
+# Scale backend instances
+docker-compose up -d --scale backend=3
+
+# Scale worker instances
+docker-compose --profile queue up -d --scale worker=5
+
+# Load balancer will automatically distribute traffic
+```
+
+### Performance Tuning
+
+```yaml
+# docker-compose.override.yml
+version: '3.8'
+services:
+  backend:
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 1G
+          cpus: '0.5'
+  
+  mongodb:
+    command: mongod --wiredTigerCacheSizeGB=2
+```
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Port conflicts**
+   ```bash
+   # Check which ports are in use
+   netstat -tulpn | grep LISTEN
+   
+   # Modify docker-compose.yml ports if needed
+   ```
+
+2. **Out of memory**
+   ```bash
+   # Check container memory usage
+   docker stats
+   
+   # Increase Docker memory limit in Docker Desktop
+   ```
+
+3. **Database connection issues**
+   ```bash
+   # Check MongoDB logs
+   docker-compose logs mongodb
+   
+   # Verify connection string in .env file
+   ```
+
+4. **Blockchain connection**
+   ```bash
+   # Check Ganache status
+   docker-compose logs ganache
+   
+   # Verify RPC URL accessibility
+   curl http://localhost:8545
+   ```
+
+### Log Analysis
+
+```bash
+# Aggregate logs from all services
+docker-compose logs --tail=100 -f > platform.log
+
+# Search for specific errors
+grep -i error platform.log
+grep -i "failed" platform.log
+
+# Monitor real-time errors
+docker-compose logs -f | grep ERROR
+```
+
+## Production Deployment
+
+### Security Checklist
+
+- [ ] Change default passwords in all services
+- [ ] Enable SSL/TLS with proper certificates
+- [ ] Configure firewall rules
+- [ ] Set up proper backup procedures
+- [ ] Enable audit logging
+- [ ] Configure rate limiting
+- [ ] Set up monitoring and alerting
+
+### Environment Variables for Production
+
+```env
+NODE_ENV=production
+MONGODB_URI=mongodb://production-cluster/collective-creation
+REDIS_URL=rediss://production-redis:6380
+BLOCKCHAIN_RPC_URL=https://mainnet.infura.io/v3/YOUR_PROJECT_ID
+JWT_SECRET=complex-production-secret
+SSL_CERT_PATH=/etc/ssl/certs/cert.pem
+SSL_KEY_PATH=/etc/ssl/private/key.pem
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+### Development Guidelines
+
+- Follow ESLint configuration
+- Write tests for new features
+- Update documentation
+- Use conventional commit messages
+- Ensure Docker builds succeed
 
 ## License
 
-This project is proprietary and patent-pending. 
+This project is proprietary and patent-pending.
 
 ## Support
 
-- **Documentation**: [docs.collectivecreation.ai](https://docs.collectivecreation.ai)
-- **Community**: [Discord Server](https://discord.gg/collective-creation)
+- **Documentation**: [GitHub Wiki](https://github.com/JJshome/CollectiveCreationPlatform/wiki)
 - **Issues**: [GitHub Issues](https://github.com/JJshome/CollectiveCreationPlatform/issues)
-- **Email**: support@collectivecreation.ai
+- **Discussions**: [GitHub Discussions](https://github.com/JJshome/CollectiveCreationPlatform/discussions)
 
 ---
 
