@@ -1,0 +1,401 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  NODE_VERSION: '18'
+  DOCKER_BUILDKIT: 1
+  COMPOSE_DOCKER_CLI_BUILD: 1
+
+jobs:
+  # Code Quality Checks
+  lint-and-test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: |
+          src/backend/package-lock.json
+          src/frontend/package-lock.json
+    
+    - name: Install backend dependencies
+      run: |
+        cd src/backend
+        npm ci
+    
+    - name: Install frontend dependencies
+      run: |
+        cd src/frontend
+        npm ci
+    
+    - name: Run backend linting
+      run: |
+        cd src/backend
+        npm run lint
+    
+    - name: Run frontend linting
+      run: |
+        cd src/frontend
+        npm run lint
+    
+    - name: Run backend tests
+      run: |
+        cd src/backend
+        npm run test:coverage
+    
+    - name: Run frontend tests
+      run: |
+        cd src/frontend
+        npm run test -- --coverage --watchAll=false
+    
+    - name: Upload coverage reports
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        directory: ./coverage/
+        fail_ci_if_error: true
+
+  # Security Scanning
+  security-scan:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Run Snyk to check for vulnerabilities
+      uses: snyk/actions/node@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        args: --file=src/backend/package.json --severity-threshold=high
+    
+    - name: Run Snyk for frontend
+      uses: snyk/actions/node@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        args: --file=src/frontend/package.json --severity-threshold=high
+
+  # Docker Build and Test
+  docker-build:
+    runs-on: ubuntu-latest
+    needs: [lint-and-test]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Build backend Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./src/backend
+        file: ./src/backend/Dockerfile
+        tags: collective-creation-backend:test
+        load: true
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+    
+    - name: Build frontend Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./src/frontend
+        file: ./src/frontend/Dockerfile
+        tags: collective-creation-frontend:test
+        load: true
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+    
+    - name: Test Docker Compose setup
+      run: |
+        docker-compose -f docker-compose.yml -f docker-compose.test.yml up -d
+        sleep 30
+        docker-compose ps
+        curl -f http://localhost:5000/health || exit 1
+        docker-compose down
+
+  # Integration Tests
+  integration-tests:
+    runs-on: ubuntu-latest
+    needs: [docker-build]
+    
+    services:
+      mongodb:
+        image: mongo:6.0
+        env:
+          MONGO_INITDB_ROOT_USERNAME: admin
+          MONGO_INITDB_ROOT_PASSWORD: password123
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongo --eval 'db.adminCommand(\"ismaster\")'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: src/backend/package-lock.json
+    
+    - name: Install dependencies
+      run: |
+        cd src/backend
+        npm ci
+    
+    - name: Wait for services
+      run: |
+        sleep 10
+        mongo --host localhost:27017 -u admin -p password123 --authenticationDatabase admin --eval "db.adminCommand('ismaster')"
+        redis-cli -h localhost -p 6379 ping
+    
+    - name: Run integration tests
+      env:
+        NODE_ENV: test
+        MONGODB_URI: mongodb://admin:password123@localhost:27017/collective-creation-test?authSource=admin
+        REDIS_URL: redis://localhost:6379
+        JWT_SECRET: test-secret
+      run: |
+        cd src/backend
+        npm run test:integration
+
+  # Deploy to Staging
+  deploy-staging:
+    runs-on: ubuntu-latest
+    needs: [integration-tests, security-scan]
+    if: github.ref == 'refs/heads/develop'
+    
+    environment:
+      name: staging
+      url: https://staging.collectivecreation.ai
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Build and push backend image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./src/backend
+        file: ./src/backend/Dockerfile
+        push: true
+        tags: |
+          ${{ secrets.DOCKER_USERNAME }}/collective-creation-backend:staging
+          ${{ secrets.DOCKER_USERNAME }}/collective-creation-backend:${{ github.sha }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+    
+    - name: Build and push frontend image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./src/frontend
+        file: ./src/frontend/Dockerfile
+        push: true
+        tags: |
+          ${{ secrets.DOCKER_USERNAME }}/collective-creation-frontend:staging
+          ${{ secrets.DOCKER_USERNAME }}/collective-creation-frontend:${{ github.sha }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+    
+    - name: Deploy to staging
+      run: |
+        echo "Deploying to staging environment..."
+        # Add your deployment commands here
+        # e.g., kubectl apply, docker-compose pull && docker-compose up, etc.
+
+  # Deploy to Production
+  deploy-production:
+    runs-on: ubuntu-latest
+    needs: [integration-tests, security-scan]
+    if: github.ref == 'refs/heads/main'
+    
+    environment:
+      name: production
+      url: https://collectivecreation.ai
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Build and push backend image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./src/backend
+        file: ./src/backend/Dockerfile
+        push: true
+        tags: |
+          ${{ secrets.DOCKER_USERNAME }}/collective-creation-backend:latest
+          ${{ secrets.DOCKER_USERNAME }}/collective-creation-backend:v${{ github.run_number }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+    
+    - name: Build and push frontend image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./src/frontend
+        file: ./src/frontend/Dockerfile
+        push: true
+        tags: |
+          ${{ secrets.DOCKER_USERNAME }}/collective-creation-frontend:latest
+          ${{ secrets.DOCKER_USERNAME }}/collective-creation-frontend:v${{ github.run_number }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+    
+    - name: Create Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ github.run_number }}
+        release_name: Release v${{ github.run_number }}
+        body: |
+          ## Changes in this Release
+          - Automated release from main branch
+          - Commit: ${{ github.sha }}
+          - Build: ${{ github.run_number }}
+        draft: false
+        prerelease: false
+    
+    - name: Deploy to production
+      run: |
+        echo "Deploying to production environment..."
+        # Add your production deployment commands here
+        # This might include:
+        # - Kubernetes deployment
+        # - Docker Swarm update
+        # - AWS ECS task update
+        # - Server SSH and docker-compose update
+
+  # Performance Testing
+  performance-test:
+    runs-on: ubuntu-latest
+    needs: [docker-build]
+    if: github.event_name == 'pull_request'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Run Docker Compose
+      run: |
+        docker-compose up -d
+        sleep 60
+    
+    - name: Install Artillery
+      run: npm install -g artillery@latest
+    
+    - name: Run performance tests
+      run: |
+        artillery run tests/performance/load-test.yml
+    
+    - name: Upload performance results
+      uses: actions/upload-artifact@v3
+      with:
+        name: performance-results
+        path: performance-results.json
+    
+    - name: Cleanup
+      run: docker-compose down
+
+  # Dependency Updates
+  dependency-update:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+    
+    - name: Update backend dependencies
+      run: |
+        cd src/backend
+        npx npm-check-updates -u
+        npm install
+    
+    - name: Update frontend dependencies
+      run: |
+        cd src/frontend
+        npx npm-check-updates -u
+        npm install
+    
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v5
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: 'chore: update dependencies'
+        title: 'Automated Dependency Updates'
+        body: |
+          ## Automated Dependency Updates
+          
+          This PR contains automated dependency updates:
+          - Backend dependencies updated
+          - Frontend dependencies updated
+          
+          Please review and test before merging.
+        branch: dependency-updates
+        delete-branch: true
+
+# Scheduled workflow for dependency updates
+on:
+  schedule:
+    # Run weekly on Sundays at 2 AM UTC
+    - cron: '0 2 * * 0'
