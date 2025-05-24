@@ -1,0 +1,156 @@
+<svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="sysGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#16a085;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2c3e50;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow">
+      <feDropShadow dx="2" dy="2" stdDeviation="3" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="800" height="600" fill="#ecf0f1"/>
+  
+  <!-- Title -->
+  <text x="400" y="40" text-anchor="middle" fill="#2c3e50" font-family="Arial, sans-serif" font-size="24" font-weight="bold">System Architecture</text>
+  
+  <!-- Core System -->
+  <g id="core-system">
+    <rect x="250" y="200" width="300" height="200" rx="15" fill="url(#sysGrad)" opacity="0.9" filter="url(#shadow)"/>
+    <text x="400" y="230" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="18" font-weight="bold">Core Platform</text>
+    
+    <!-- Core Components -->
+    <rect x="270" y="250" width="120" height="40" rx="5" fill="#34495e" opacity="0.8"/>
+    <text x="330" y="275" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="12">LLM Manager</text>
+    
+    <rect x="410" y="250" width="120" height="40" rx="5" fill="#34495e" opacity="0.8"/>
+    <text x="470" y="275" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="12">Design Engine</text>
+    
+    <rect x="270" y="300" width="120" height="40" rx="5" fill="#34495e" opacity="0.8"/>
+    <text x="330" y="325" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="12">Consensus</text>
+    
+    <rect x="410" y="300" width="120" height="40" rx="5" fill="#34495e" opacity="0.8"/>
+    <text x="470" y="325" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="12">Blockchain</text>
+    
+    <rect x="340" y="350" width="120" height="40" rx="5" fill="#34495e" opacity="0.8"/>
+    <text x="400" y="375" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="12">Data Store</text>
+  </g>
+  
+  <!-- Frontend Layer -->
+  <g id="frontend">
+    <rect x="50" y="80" width="200" height="80" rx="10" fill="#3498db" opacity="0.8" filter="url(#shadow)"/>
+    <text x="150" y="110" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="16" font-weight="bold">Frontend</text>
+    <text x="150" y="130" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="11">React + Three.js</text>
+    <text x="150" y="145" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="11">WebSocket Client</text>
+  </g>
+  
+  <!-- AI/ML Layer -->
+  <g id="ai-ml">
+    <rect x="550" y="80" width="200" height="80" rx="10" fill="#9b59b6" opacity="0.8" filter="url(#shadow)"/>
+    <text x="650" y="110" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="16" font-weight="bold">AI/ML Services</text>
+    <text x="650" y="130" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="11">Python + HuggingFace</text>
+    <text x="650" y="145" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="11">Model Inference</text>
+  </g>
+  
+  <!-- Blockchain Layer -->
+  <g id="blockchain">
+    <rect x="550" y="440" width="200" height="80" rx="10" fill="#f39c12" opacity="0.8" filter="url(#shadow)"/>
+    <text x="650" y="470" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="16" font-weight="bold">Blockchain</text>
+    <text x="650" y="490" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="11">Ethereum Network</text>
+    <text x="650" y="505" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="11">Smart Contracts</text>
+  </g>
+  
+  <!-- Database Layer -->
+  <g id="database">
+    <rect x="50" y="440" width="200" height="80" rx="10" fill="#2ecc71" opacity="0.8" filter="url(#shadow)"/>
+    <text x="150" y="470" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="16" font-weight="bold">Databases</text>
+    <text x="150" y="490" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="11">MongoDB</text>
+    <text x="150" y="505" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="11">Redis Cache</text>
+  </g>
+  
+  <!-- Connections -->
+  <g id="connections">
+    <!-- Frontend to Core -->
+    <path d="M 250 120 Q 400 160 350 200" stroke="#3498db" stroke-width="3" fill="none" opacity="0.6">
+      <animate attributeName="opacity" values="0.6;1;0.6" dur="3s" repeatCount="indefinite"/>
+    </path>
+    
+    <!-- AI/ML to Core -->
+    <path d="M 550 120 Q 400 160 450 200" stroke="#9b59b6" stroke-width="3" fill="none" opacity="0.6">
+      <animate attributeName="opacity" values="0.6;1;0.6" dur="3.5s" repeatCount="indefinite"/>
+    </path>
+    
+    <!-- Core to Blockchain -->
+    <path d="M 450 400 Q 550 420 550 480" stroke="#f39c12" stroke-width="3" fill="none" opacity="0.6">
+      <animate attributeName="opacity" values="0.6;1;0.6" dur="4s" repeatCount="indefinite"/>
+    </path>
+    
+    <!-- Core to Database -->
+    <path d="M 350 400 Q 250 420 250 480" stroke="#2ecc71" stroke-width="3" fill="none" opacity="0.6">
+      <animate attributeName="opacity" values="0.6;1;0.6" dur="3.8s" repeatCount="indefinite"/>
+    </path>
+  </g>
+  
+  <!-- API Gateway -->
+  <g id="api-gateway">
+    <rect x="300" y="100" width="200" height="60" rx="30" fill="#e74c3c" opacity="0.8" filter="url(#shadow)"/>
+    <text x="400" y="125" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="14" font-weight="bold">API Gateway</text>
+    <text x="400" y="145" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="11">REST + WebSocket</text>
+    
+    <!-- API connections -->
+    <line x1="400" y1="160" x2="400" y2="200" stroke="#e74c3c" stroke-width="3" opacity="0.6"/>
+  </g>
+  
+  <!-- External Services -->
+  <g id="external">
+    <rect x="50" y="250" width="150" height="120" rx="10" fill="#95a5a6" opacity="0.8" filter="url(#shadow)"/>
+    <text x="125" y="280" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="14" font-weight="bold">External APIs</text>
+    <text x="125" y="305" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="10">Fashion APIs</text>
+    <text x="125" y="320" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="10">Image Services</text>
+    <text x="125" y="335" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="10">Auth Providers</text>
+    <text x="125" y="350" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="10">Analytics</text>
+    
+    <!-- Connection to core -->
+    <line x1="200" y1="310" x2="250" y2="300" stroke="#95a5a6" stroke-width="2" stroke-dasharray="5,5" opacity="0.5">
+      <animate attributeName="stroke-dashoffset" values="0;10" dur="1s" repeatCount="indefinite"/>
+    </line>
+  </g>
+  
+  <!-- Security Layer -->
+  <g id="security">
+    <rect x="600" y="250" width="150" height="120" rx="10" fill="#c0392b" opacity="0.8" filter="url(#shadow)"/>
+    <text x="675" y="280" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="14" font-weight="bold">Security</text>
+    <text x="675" y="305" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="10">Auth/AuthZ</text>
+    <text x="675" y="320" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="10">Encryption</text>
+    <text x="675" y="335" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="10">Rate Limiting</text>
+    <text x="675" y="350" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="10">Monitoring</text>
+    
+    <!-- Connection to core -->
+    <line x1="600" y1="310" x2="550" y2="300" stroke="#c0392b" stroke-width="2" stroke-dasharray="5,5" opacity="0.5">
+      <animate attributeName="stroke-dashoffset" values="0;10" dur="1s" repeatCount="indefinite"/>
+    </line>
+  </g>
+  
+  <!-- Data flow indicators -->
+  <circle r="4" fill="#3498db">
+    <animateMotion dur="5s" repeatCount="indefinite">
+      <mpath href="#dataflow1"/>
+    </animateMotion>
+  </circle>
+  <path id="dataflow1" d="M 150 160 Q 400 180 400 200" fill="none"/>
+  
+  <circle r="4" fill="#9b59b6">
+    <animateMotion dur="5s" begin="1s" repeatCount="indefinite">
+      <mpath href="#dataflow2"/>
+    </animateMotion>
+  </circle>
+  <path id="dataflow2" d="M 650 160 Q 400 180 400 200" fill="none"/>
+  
+  <circle r="4" fill="#2ecc71">
+    <animateMotion dur="5s" begin="2s" repeatCount="indefinite">
+      <mpath href="#dataflow3"/>
+    </animateMotion>
+  </circle>
+  <path id="dataflow3" d="M 400 400 Q 150 450 150 440" fill="none"/>
+</svg>
