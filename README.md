@@ -402,16 +402,6 @@ npm run dev
 - **User Emotional Journey**: Map user satisfaction over time
 - **Economic Impact**: Measure value creation through virtual economy
 
-## Contributing
-
-We welcome contributions to the Collective Creation Platform! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details on:
-
-- Code style and standards
-- Testing requirements
-- Emotional AI ethics guidelines
-- Blockchain security practices
-- Documentation standards
-
 ## License
 
 This project is proprietary and patent-pending. 
